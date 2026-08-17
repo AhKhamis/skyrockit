@@ -2,8 +2,36 @@ const User = require('../models/user');
 
 const index = async (req, res) => {
   try {
-    res.render('applications/index.ejs');
+    const user = await User.findById(req.params.id);
+
+    res.render('applications/index.ejs', { applications: user.applications });
   } catch (err) {
+    res.redirect('/');
+  }
+};
+
+const show = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    const application = user.applications.id(req.params.appId);
+
+    res.render('applications/show.ejs', { application });
+  } catch (err) {
+    console.log(err);
+    res.redirect('/');
+  }
+};
+
+const deleteApp = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    user.applications.pull(req.params.appId);
+
+    await user.save();
+
+    res.redirect(`/users/${user._id}/applications`);
+  } catch (err) {
+    console.log(err);
     res.redirect('/');
   }
 };
@@ -30,4 +58,10 @@ const create = async (req, res) => {
   }
 };
 
-module.exports = { index, new: newApp, create };
+module.exports = {
+  index,
+  new: newApp,
+  create,
+  show,
+  delete: deleteApp,
+};
